@@ -39,4 +39,3 @@ class Verb():
         level = lvlList[int(inputLvl)-1]
         return level
     
-player1 = Verb()
