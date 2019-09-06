@@ -19,6 +19,25 @@ class Verb():
  
     def Cell(self,line,column):
         return VerbenSheet.cell(line,column).value
+    
+    def refLabel(self,name):
+        for i in range(0,200):
+            if name == Verb.Cell(self,0,i):
+                return i
+
+    def numVerbs(self, title):        
+        vRef = Verb.refLabel(self,title)
+        for i in range(1,5):
+            if Verb.Cell(self,i,vRef+1) == "":
+                initLine = i+1
+                break
+        count = 0
+        while(1):
+            if Verb.Cell(self,count,vRef) == '':
+                finalLine = count
+                break
+            count += 1
+        return [initLine,finalLine]
 #------------------------------------------------------------------------------#    
 
 #------------------------------------------------------------------------------#    
@@ -29,11 +48,8 @@ class Verb():
                 break
             if Verb.Cell(self,0,i) != '':
                 if Verb.Cell(self,0,i) !='Hilfsverben':
-                    tupla = (Verb.Cell(self,0,i), i)
-                    titleList.append(tupla)
+                    titleList.append(Verb.Cell(self,0,i))
         return titleList
-#------------------------------------------------------------------------------#    
-
 #------------------------------------------------------------------------------#
             
 ######################### ACCESS TO THE DYNAMIC DATABASE #######################
@@ -50,19 +66,21 @@ class Verb():
     def createVLC(self):
         titles = Verb.gettitles(self)
         title = Verb.choseTitle(self,titles)
+        cRef = Verb.refLabel(self,title)
         VList = []
         lList = []
-    #    linesNum = Verb.numVerbs(self, title)
-        initLine = 1  
-        endLine = 100
+        refSize = Verb.numVerbs(self,title)
+        initLine = refSize[0]
+        endLine = refSize[1]
         for i in range(initLine,endLine):
             lList = []
-            if Verb.Cell(self,i,title[1]) != '':
-                lList.append(Verb.Cell(self,i,int(title[1])))
-            else:
-                continue
+            if Verb.Cell(self,i,cRef) != '':
+                if Verb.Cell(self,i,cRef+1) != '':
+                    lList.append(Verb.Cell(self,i,cRef))
+                else:
+                    continue
             VList.append(lList)
-        return VList 
+        return VList
         
 ######################### INTERFACE WITH THE GAMER #############################
     def welcome(self):
