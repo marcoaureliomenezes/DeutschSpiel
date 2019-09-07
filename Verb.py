@@ -241,3 +241,18 @@ level = player1.choseSizeList()
 verbList = player1.callVerbList(level)
 for i in verbList:
     print(i)
+    
+    """
+    TODO: Put the global strings on the spreadsheet.
+    Resolve the limit error.
+    Create a function that makes the check up made in all the functions of interface
+    Make the lock for the muttersprache, Do you know what is it.
+    Create the soluction function (many small functions)
+    for many tenses.
+    create the functions training and playing
+    Make the sketch of the first function wich decides show the verbs (training)
+    or play the verbs (excercise)
+    Think about something (pontuação)
+    Explain on the spreadsheet the suntitiles.
+    
+    """
