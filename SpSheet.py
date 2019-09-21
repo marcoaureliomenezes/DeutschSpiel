@@ -24,6 +24,13 @@ class SpSheet():
 #------------------------------------------------------------------------------#  
     def Cell(self,Aba,line,column):
         return Aba.cell(line,column).value
+#------------------------------------------------------------------------------#    
+    def printEnumList(self,List):
+        confList = []
+        for i in range(0,len(List)):
+            print(i+1, "-", List[i])
+            confList.append(str(i+1))
+        return confList
 #------------------------------------------------------------------------------#     
     def refCLabel(self,aba,label):
         count = 0
@@ -44,6 +51,8 @@ class SpSheet():
                     count = 1
                     while SpSheet.Cell(self,aba,i,j + count) == '':
                         count += 1
+                        if SpSheet.Cell(self,aba,i+2,j + count) == '':
+                            break
                     lista.append([(i,j),count])
         return lista
 #------------------------------------------------------------------------------#
@@ -57,30 +66,35 @@ class SpSheet():
         return titleList
     
 #------------------------------------------------------------------------------#   
-    def choseTrans(self):
+    def choseTrans(self,aba,ref):
         tongue =[]
-        tRef = SpSheet.refSubTitles(self,"Übersetzung")
-       # for i in tRef: TODO: CHECK THE TRANSLATE COLUMNS PER TITLE.
-       #     print(i[1])
-        line = ((tRef[0])[0])[0]
-        col = ((tRef[0])[0])[1]
-        size = (tRef[0])[1]       
+        tongueAddr =[]
+        col = ((ref[0])[0])[1]
+        lineKind = ((ref[0])[0])[0] +1
+        Tline = lineKind + 1
+        size = (ref[0])[1] 
+        
         for i in range(0,size):
-            tongue.append(SpSheet.Cell(self,line+1,col+i))             
-        print(mutterspracheMsg)
+            if SpSheet.Cell(self,aba,lineKind,col + i) == "Übersetzung":
+                count = 0
+                tCol = col + i
+                while SpSheet.Cell(self,aba,Tline,tCol) != '':                   
+                    tongueName = SpSheet.Cell(self,aba,Tline,tCol)
+                    tongue.append((tongueName))
+                    tongueAddr.append(tCol)
+                    count += 1
+                    tCol = col + i + count
+                    
         inputMT = 0
         while 1:
             confList = SpSheet.printEnumList(self,tongue)
             inputMT = input("Muttersprache: ")
             if inputMT in confList:
                 break
-            print(invalidInput)
-            time.sleep(2)                     
+            print(invalidInput)                    
         inputMT = int(inputMT)
         print("Muttersprache: ",tongue[inputMT-1])
-        time.sleep(2)
-        return inputMT
-    
+        return tongueAddr[inputMT-1]
 #------------------------------------------------------------------------------#
         
     def numElem(self,aba, title):        
