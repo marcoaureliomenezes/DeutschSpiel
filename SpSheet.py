@@ -53,8 +53,8 @@ class SpSheet():
                         count += 1
                         if SpSheet.Cell(self,aba,i+2,j + count) == '':
                             break
-                    lista.append([(i,j),count])
-        return lista
+                    ref = [(i,j),count]
+        return ref
 #------------------------------------------------------------------------------#
     def gettitles(self,aba):
         titleList = []
@@ -66,13 +66,19 @@ class SpSheet():
         return titleList
     
 #------------------------------------------------------------------------------#   
+    '''Pseudocodigo
+    recebe referencia Wortschatz [[]]
+    define linha, coluna e largura
+    
+    
+    '''
     def choseTrans(self,aba,ref):
         tongue =[]
         tongueAddr =[]
-        col = ((ref[0])[0])[1]
-        lineKind = ((ref[0])[0])[0] +1
+        col = (ref[0])[1]
+        lineKind = (ref[0])[0] + 1
         Tline = lineKind + 1
-        size = (ref[0])[1] 
+        size = ref[1]
         
         for i in range(0,size):
             if SpSheet.Cell(self,aba,lineKind,col + i) == "Übersetzung":
@@ -95,17 +101,25 @@ class SpSheet():
         inputMT = int(inputMT)
         print("Muttersprache: ",tongue[inputMT-1])
         return tongueAddr[inputMT-1]
-#------------------------------------------------------------------------------#
-        
-    def numElem(self,aba, title):        
-        vRef = SpSheet.refCLabel(self,aba,title)
+#------------------------------------------------------------------------------#      
+    def firstLine(self,aba,vref,preValue):
+        count = 0
+        ref = (vref[0])[1]
+        zeroValue = ''
+        while zeroValue != preValue:
+            zeroValue = SpSheet.Cell(self,aba,count,ref)
+            count += 1
+        return count
+#------------------------------------------------------------------------------#    
+    def numElem(self,aba, vref):        
+
         for i in range(1,5):
-            if SpSheet.Cell(self,aba,i,vRef+1) == "":
+            if SpSheet.Cell(self,aba,i,vref+1) == "":
                 initLine = i+1
                 break
         count = 0
         while(1):
-            if SpSheet.Cell(self,aba,count,vRef) == '':
+            if SpSheet.Cell(self,aba,count,vref) == '':
                 finalLine = count
                 break
             count += 1
