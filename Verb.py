@@ -5,71 +5,20 @@ Created on Tue Sep  3 23:02:21 2019
 @author: Marco Menezes
 """
 import time
-import xlrd
+import SpSheet as Sp
+import texts as txt
 
-lvlList = ("Alle Verben (Expert)","Verben pro Klasse (Medium)",
-           "Verben pro Unterklasse (Easy)")
-listTense = ("Präsens","Perfekt","Präteritum","Futur I","Plasquamperfekt",
-             "Futur II","Konjunktiv II + Vergangenheit",
-             "Konjunktiv II + Futur I","Konjunktiv II + Futur II",
-             "Passiv Vergangenheit","Passiv Präsen")
-listTense2 = ("Präsens","Perfekt","Präteritum")
-modalVerbs = ("Können","Sollen","Dürfen","Müssen","Wollen")
-bitteVerbs = ("Möchten","Würden gern")
-untrennbarePrefix = ("be","emp","ent","er","miss","ver","zer")
-trennbarePrefix = ("ab","an","auf","aus","bei","ein","mit",
-                   "her","hin","vor","weg","zu","zurück")
-vetPrasens1 = ['e','st','t','t','en']
-vetPrasens2 = ['e','est','et','et','en']
-vetPrasens3 = ['e','t','t','t','en']
-finalCase2 = ["t","d","m","n"]
-finalCase3 = ["s","x","z","ß"]
-vetPrateritum = ['te','test','te','tet','ten'] 
-trennUntrennPrefix = ("durch","hinter","über","um","unter")
-vetPerson = ['Ich','Du','Er/Sie/Es','Ihr','Wir/Sie/sie']
-invalidInput = "Bitte geben Sie eine gültige Nummer ein!\n"
-difficultyMsg = "Wählen Sie eine Schwierigkeitsgrad (Nummer) für das VerbenSpiel:\n\n"
-mutterspracheMsg = "\nWählen Sie bitte eine Muttersprache für die Übersetzung:\n\n"
-subThemaMsg = "\nWählen Sie bitte eine Nummer für das Untertitel des Spiels:\n\n"
-themaMsg = "\nWählen Sie bitte eine Nummer für das Thema des Spiels:\n\n"
-introdMsg1 = "\n\nHallo mein Freund! Herzlich Willkommen zum Spiel von Marco"
-introdMsg2 = " Menezes. Diese Software hat eine glorreiche Zukunft.\n\n"
-introdMsg = introdMsg1 + introdMsg2
-tenseMsg1 = "\n\nWählen Sie die im Spiel verfügbaren Zeiten! Geben Sie "
-tenseMsg2 = "Kommagetrennte Zahlen, z.B '2,4' for Perfekt und Futur I.\n"
-tenseMsg = tenseMsg1 + tenseMsg2
-deutschspreadsheet = xlrd.open_workbook('Deutsch_Databank.xlsx')
-VerbenSheet = deutschspreadsheet.sheet_by_name('Verben')
+verben = Sp.accessSP("Verben")
 
 class Verb():
+    
     def __init__(self):
         pass  
-#------------------------------------------------------------------------------#  
-    def Cell(self,line,column):
-        return VerbenSheet.cell(line,column).value
-#------------------------------------------------------------------------------#     
-    def refCLabel(self,label):
-        count = 0
-        while 1:
-            if label == Verb.Cell(self,0,count):
-                break
-            if Verb.Cell(self,0,count) == "end":
-                print("Es gibt keine Label heißt", label)
-                break
-            count += 1
-        return count
-#------------------------------------------------------------------------------#
-    def refSubTitles(self,name):
-        lista = []
-        for i in range(0,4):
-            for j in range(0,100):
-                if Verb.Cell(self,i,j) == name:
-                    count = 1
-                    while Verb.Cell(self,i,j + count) == '':
-                        count += 1
-                    lista.append([(i,j),count])
-        return lista
-#------------------------------------------------------------------------------# 
+      
+    '''
+    calcula o numero de verbos da lista.
+    Motivo:
+    '''
     def numVerbs(self, title):        
         vRef = Verb.refCLabel(self,title)
         for i in range(1,5):
@@ -93,31 +42,32 @@ class Verb():
     def getInfinitive(self,verb):
         verb = verb.replace('-','')
         return verb.lower()
-#------------------------------------------------------------------------------#    
-    def gettitles(self):
-        titleList = []
-        for i in range(0,200):
-            if Verb.Cell(self,0,i) == 'end':
-                break
-            if Verb.Cell(self,0,i) != '':
-                if Verb.Cell(self,0,i) !='Hilfsverben':
-                    titleList.append(Verb.Cell(self,0,i))
-        return titleList
 #------------------------------------------------------------------------------#
             
-######################### ACCESS TO THE DYNAMIC DATABASE #######################   
+######################### ACCESS TO THE DYNAMIC DATABASE #######################
+    '''
+    The callVerbList method receives a level (hard, medium or easy). Based on
+    this creates the list of verbs:
+      Expert:   All verbs from the list (Unregel- and Regelmäßige verben)
+      Medium: Verbs from chosen list (Unregel- or Regelmäßige verben)
+      Easy:   
+    '''
     def callVerbList(self,level):  
         verbList = []
-        translate = Verb.choseTrans(self) 
-        if level == lvlList[0]:
-            titles = Verb.gettitles(self)
+  #      ref = Sp.refSubTitles(verben,"Unregelmäßige Verben")
+  #      translate = Sp.choseTrans(verben,ref) 
+        
+        if level == txt.lvlList[0]:
+            titles = Sp.gettitles(verben)
             for title in titles:
                 verbList += Verb.createVLC(self,title,translate)
-        elif level == lvlList[1]:
-            titles = Verb.gettitles(self)
+                
+        elif level == txt.lvlList[1]:
+            titles = Sp.gettitles(verben)
             title = Verb.choseTitle(self,titles)
             verbList = Verb.createVLC(self,title,translate)
-        elif level == lvlList[2]:
+            
+        elif level == txt.lvlList[2]:
             titles = Verb.gettitles(self)
             title = Verb.choseTitle(self,titles)
             verbList = Verb.createVLSC(self,title,translate)
@@ -125,7 +75,7 @@ class Verb():
         
 #------------------------------------------------------------------------------#    
     def createVLC(self, title, translate):
-        cRef = Verb.refCLabel(self,title) 
+        cRef = Sp.refCLabel(verben,title) 
         VList = []
         lList = []
         refSize = Verb.numVerbs(self,title)
@@ -146,46 +96,38 @@ class Verb():
         VList = []
         lList = []
         miniList = Verb.choseSubTitle(self,title)
-        refList = Verb.refCLabel(self,title)
+        refList = Sp.refCLabel(verben,title)
         for i in range(miniList[0],miniList[1]):
             lList = []
             rL = refList
-            lList.append(Verb.Cell(self,i,rL))
-            lList.append(Verb.Cell(self,i,rL + MT))
+            lList.append(Sp.Cell(verben,i,rL))
+            lList.append(Sp.Cell(verben,i,rL + MT))
             VList.append(lList)
         return VList
 #------------------------------------------------------------------------------#
-
-        
+      
 ######################### INTERFACE WITH THE GAMER #############################
     def welcome(self):
-        print(introdMsg)
+        print(txt.introdMsg)
         time.sleep(5)
-        print(difficultyMsg)
-#------------------------------------------------------------------------------#    
-    def printEnumList(self,List):
-        confList = []
-        for i in range(0,len(List)):
-            print(i+1, "-", List[i])
-            confList.append(str(i+1))
-        return confList
+        print(txt.difficultyMsg)
 #------------------------------------------------------------------------------#   
-    def choseSizeList(self):
+    def choseLevel(self):
         Verb.welcome(self)
         while(1):
-            confList = Verb.printEnumList(self,lvlList)
+            confList = Sp.printEnumList(txt.lvlList)
             inputLvl = input("Schwierigkeitgrad: ")
             if inputLvl in confList:
                 break
-            print(invalidInput)
+            print(txt.invalidInput)
             time.sleep(2)
-        level = lvlList[int(inputLvl)-1]
+        level = txt.lvlList[int(inputLvl)-1]
         print("Schwierigkeitgrad: ", level)
         time.sleep(2)
         return level
 #------------------------------------------------------------------------------#    
     def choseTitle(self, titles):
-        print(themaMsg)
+        print(txt.themaMsg)
         while 1:
             confList = Verb.printEnumList(self,titles)
             inputThema = input("Thema: ")
@@ -211,7 +153,7 @@ class Verb():
                 subTitle.append(Verb.Cell(self,count,tRef))
             count += 1
             
-        print(subThemaMsg)
+        print(txt.subThemaMsg)
         while 1: 
             confList = Verb.printEnumList(self,subTitle)
             inputST = input("UnterThema: ")
@@ -237,39 +179,14 @@ class Verb():
                 count2 += 1
             return Interval  
 #------------------------------------------------------------------------------#
-    def choseTrans(self):
-        tongue =[]
-        tRef = Verb.refSubTitles(self,"Übersetzung")
-       # for i in tRef: TODO: CHECK THE TRANSLATE COLUMNS PER TITLE.
-       #     print(i[1])
-        line = ((tRef[0])[0])[0]
-        col = ((tRef[0])[0])[1]
-        size = (tRef[0])[1]       
-        for i in range(0,size):
-            tongue.append(Verb.Cell(self,line+1,col+i))             
-        print(mutterspracheMsg)
-        inputMT = 0
-        while 1:
-            confList = Verb.printEnumList(self,tongue)
-            inputMT = input("Muttersprache: ")
-            if inputMT in confList:
-                break
-            print(invalidInput)
-            time.sleep(2)
-                       
-        inputMT = int(inputMT)
-        print("Muttersprache: ",tongue[inputMT-1])
-        time.sleep(2)
-        return inputMT
-#------------------------------------------------------------------------------#
     def choseTense(self):
-        print(tenseMsg)
+        print(txt.tenseMsg)
         returnList = []
         check = ''
         while check != "quit":
-            confList = Verb.printEnumList(self,listTense)
+            confList = Sp.printEnumList(self,txt.listTense)
             returnList = []
-            print(invalidInput) 
+            print(txt.invalidInput) 
             tense = input("Zeiten: ")
             tense = tense.replace(' ','')
             tenseList = tense.split(',')
@@ -385,7 +302,11 @@ class Verb():
             if person == vetPerson[i]:
                 columnR = col + i
                 return Verb.Cell(self,lineR,columnR)
-                                    
+    ''' 
+            pycharm
+            PEP
+            docstrings.
+    '''                        
 #------------------------------------------------------------------------------#
     def findAnswer(self,tense, person, verb, verbList):
         infinitiv = Verb.getInfinitive(self,verb)
@@ -510,10 +431,10 @@ class Verb():
             print()
 ################################################################################
 player1 = Verb()
-player1.printInfo("Er/Sie/Es")
-
+level = player1.choseLevel()
+player1.callVerbList(level)
 """
-TODO: 
+TODO:
 *Put the global strings on the spreadsheet.
 *Resolve the limit error.
 *Create a function that makes the check up made in all the functions of interface
