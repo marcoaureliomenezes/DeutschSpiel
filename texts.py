@@ -35,18 +35,36 @@ finalCase3 = ["s","x","z","ß"]
 vetPrateritum = ['te','test','te','tet','ten'] 
 trennUntrennPrefix = ("durch","hinter","über","um","unter")
 
+SubOptions = ["Genre zu trainieren (bestimmter Artikel - Nominativ)",
+              "Gender- und Case- Training (bestimmter Artikel - Alle Fälle)",
+              "Gender- und Case-Training für ausgewählte Vornamen",
+              "Deklination von Vornamen und Adjektiven"]
 
 NomPerson = ['Ich','Du','Er/Sie/Es','Ihr','Wir/Sie/sie']
 AkkPerson = ['mich','dich','ihn/sie/es','uns','euch, Sie/sie']
 DatPerson = ['mir','dir','ihm/ihr/ihm','uns','euch, Ihnen/ihnen']
 RefPerson = ['mich','dich','sich','uns','euch, sich']
 #-------------------- DATA ABOUT THE GAME INTERFACE ---------------------------#
+jNext = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+jScore = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
-invalidInput = "Bitte geben Sie eine gültige Nummer ein!\n"
+WStxt = "Willkommen beim Wortschatz Training und Übung.\n"
+choseWS = "\nBitte wählen Sie einen Wortschatz.\n"
+WSMode = ["Training","Übung"]
+infoWS1 = "Vorbildliche Antwort:\n\n"
+infoWS2 = "* Verb -> Hilfsverb + Partizip II.\n"
+infoWS3 = "* Substantiv -> im Nominativ definierter Artikel.\n"
+infoWS4 = "* Adjektiv oder Adverb -> Synonym.\n"
+infoWS_1 = infoWS1 + infoWS2 + infoWS3 + infoWS4
+
+#------------------------------------------------------------------------------#
+
+invalidInput = "Bitte geben Sie eine gültige Nummer ein!"
 difficultyMsg = "Wählen Sie eine Schwierigkeitsgrad (Nummer) für das VerbenSpiel:\n\n"
-mutterspracheMsg = "\nWählen Sie bitte eine Muttersprache für die Übersetzung:\n\n"
+MTMsg = "Wählen Sie bitte eine Muttersprache für die Übersetzung:\n"
 subThemaMsg = "\nWählen Sie bitte eine Nummer für das Untertitel des Spiels:\n\n"
 themaMsg = "\nWählen Sie bitte eine Nummer für das Thema des Spiels:\n\n"
+UbungMsg = "\nWählen Sie bitte einen Trainingsmodus:\n"
 introdMsg1 = "\n\nHallo mein Freund! Herzlich Willkommen zum Spiel von Marco"
 introdMsg2 = " Menezes. Diese Software hat eine glorreiche Zukunft.\n\n"
 introdMsg = introdMsg1 + introdMsg2
