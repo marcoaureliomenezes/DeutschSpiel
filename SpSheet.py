@@ -4,19 +4,36 @@ Created on Tue Sep 10 00:05:06 2019
 @author: Marco Menezes
 """
 import xlrd
-import time
 import texts as txt
+import random
 
 '''
 remDupList(List) function receives as parameter a list and returns the content
 of this list without duplicate data.
 '''
+
+def randList(List):
+    rand = random.randint(0,len(List)-1)
+    return rand
+    
 def remDupList(List):
     lista2 = []
     for i in List:
         if i not in lista2:
             lista2.append(i)
     return lista2
+'''
+pega uma string e coloca o caractere repl no index indicado
+
+'''
+def atString(index,string,repl):
+    nString = ''
+    for i in range(0,len(string)):
+        if i == index:
+            nString += repl
+        else:
+            nString += string[i]
+    return nString 
 '''
 The accessSP(sheet) function receives as parameter the sheet's name and returns
 this sheet. 
@@ -106,7 +123,6 @@ a message and the options that the player has enumered.
 '''       
 def showTitle(titles):
     confirmList = []
-    print(txt.themaMsg)
     for i in range(0,len(titles)):
         confirmList.append(str(i+1))
         print(str(i+1),"-", titles[i])
@@ -121,7 +137,6 @@ def choseTitle(titles):
     thema = ''
     confList = showTitle(titles)  
     while 1:
-        print(txt.invalidInput)            
         thema = input()
         if thema in confList:
             break
@@ -196,7 +211,7 @@ def choseTrans(sheet,ref):
     lineST = (ref[0])[0] + 1   # Line that contains the subtitles
     lineLang = line + 2        # Line that contains the languages
     size = ref[1]              # Size of the table.
-
+    print(txt.MTMsg)
     for i in range(0,size):
         if Cell(sheet,lineST,col + i) == "Übersetzung":
             count = 0
