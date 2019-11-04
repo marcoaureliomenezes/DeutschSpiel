@@ -1,447 +1,312 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Sep  3 23:02:21 2019
-
 @author: Marco Menezes
 """
-import time
+from time import sleep
 import SpSheet as Sp
 import texts as txt
+import generalFunctions as GF
 
 verben = Sp.accessSP("Verben")
 
-class Verb():
+class Verb():   
+    def __init__(self, nameOfPlayer):
+        self.nameOfPlayer = nameOfPlayer     
     
-    def __init__(self):
-        pass  
-      
-    '''
-    calcula o numero de verbos da lista.
-    Motivo:
-    '''
     def numVerbs(self, title):        
-        vRef = Verb.refCLabel(self,title)
+        vRef = Sp.refCol(verben,title,0)
         for i in range(1,5):
-            if Verb.Cell(self,i,vRef+1) == "":
+            if Sp.Cell(verben,i,vRef+1) == "":
                 initLine = i+1
                 break
         count = 0
         while(1):
-            if Verb.Cell(self,count,vRef) == '':
+            if Sp.Cell(verben,count,vRef) == '':
                 finalLine = count
                 break
             count += 1
         return [initLine,finalLine]
-    
-    def cutString(string,n):
-        b = ''
-        for i in range(0,len(string)-n):
-            b += string[i]
-        return b
-#------------------------------------------------------------------------------#    
-    def getInfinitive(self,verb):
-        verb = verb.replace('-','')
-        return verb.lower()
-#------------------------------------------------------------------------------#
-            
 ######################### ACCESS TO THE DYNAMIC DATABASE #######################
-    '''
-    The callVerbList method receives a level (hard, medium or easy). Based on
-    this creates the list of verbs:
-      Expert:   All verbs from the list (Unregel- and Regelmäßige verben)
-      Medium: Verbs from chosen list (Unregel- or Regelmäßige verben)
-      Easy:   
-    '''
-    def callVerbList(self,level):  
-        verbList = []
-  #      ref = Sp.refSubTitles(verben,"Unregelmäßige Verben")
-  #      translate = Sp.choseTrans(verben,ref) 
-        
-        if level == txt.lvlList[0]:
-            titles = Sp.gettitles(verben)
+    def __callVerbList(self,mode):  
+        verbList = []       
+################################################################################     
+        if mode == txt.VerbMode[0]:
+            tonguesList = []
+            commonTongues = []
+            titles = Sp.getTitles(verben)
+                     
             for title in titles:
-                verbList += Verb.createVLC(self,title,translate)
-                
-        elif level == txt.lvlList[1]:
-            titles = Sp.gettitles(verben)
-            title = Verb.choseTitle(self,titles)
-            verbList = Verb.createVLC(self,title,translate)
-            
-        elif level == txt.lvlList[2]:
-            titles = Verb.gettitles(self)
-            title = Verb.choseTitle(self,titles)
-            verbList = Verb.createVLSC(self,title,translate)
-        return verbList
-        
+                ref = Sp.refTitle(verben,title)
+                tongues = Sp.getTongueInfos(verben,ref)
+                tonguesList.append(tongues[0])
+            for i in tonguesList[0]:
+                for j in tonguesList[1]:
+                    if i == j:
+                        commonTongues.append(j)
+
+            print(txt.MTMsg)
+            tongue = Sp.choseTitle(commonTongues)
+            print("tongue", tongue)
+            for j in titles:                 
+                verbList += Verb.__createVLC(self,title,translate2)
+################################################################################ 
+        elif mode == txt.VerbMode[1]:
+            titles = Sp.getTitles(verben)
+            title = Sp.choseTitle(titles)
+            ref = Sp.refTitle(verben,title)
+            translate = Sp.choseTrans(verben,ref) 
+            verbList = Verb.__createVLC(self,title,translate)
+           
+        elif mode == txt.VerbMode[2]:
+            titles = Sp.getTitles(verben)
+            title = Sp.choseTitle(titles)
+            ref = Sp.refTitle(verben,title)
+            translate = Sp.choseTrans(verben,ref)
+            verbList = Verb.__createVLSC(self,title,translate)
+        return verbList       
 #------------------------------------------------------------------------------#    
-    def createVLC(self, title, translate):
-        cRef = Sp.refCLabel(verben,title) 
-        VList = []
-        lList = []
+    def __createVLC(self, title, translate):
+        cRef = Sp.refCol(verben,title,0)
+        VList = []; lList = []
         refSize = Verb.numVerbs(self,title)
         initLine = refSize[0]
         endLine = refSize[1]
         for i in range(initLine,endLine):
             lList = []
-            if Verb.Cell(self,i,cRef) != '':
-                if Verb.Cell(self,i,cRef+1) != '':
-                    lList.append(Verb.Cell(self,i,cRef))
-                    lList.append(Verb.Cell(self,i,cRef + translate))
+            if Sp.Cell(verben,i,cRef) != '':
+                if Sp.Cell(verben,i,cRef+1) != '':
+                    lList.append(Sp.Cell(verben,i,cRef))
+                    lList.append(Sp.Cell(verben,i,translate))
                 else:
                     continue
             VList.append(lList)
         return VList
 #------------------------------------------------------------------------------#
-    def createVLSC(self,title,MT):
-        VList = []
-        lList = []
-        miniList = Verb.choseSubTitle(self,title)
-        refList = Sp.refCLabel(verben,title)
-        for i in range(miniList[0],miniList[1]):
-            lList = []
-            rL = refList
-            lList.append(Sp.Cell(verben,i,rL))
-            lList.append(Sp.Cell(verben,i,rL + MT))
-            VList.append(lList)
-        return VList
-#------------------------------------------------------------------------------#
-      
-######################### INTERFACE WITH THE GAMER #############################
-    def welcome(self):
-        print(txt.introdMsg)
-        time.sleep(5)
-        print(txt.difficultyMsg)
-#------------------------------------------------------------------------------#   
-    def choseLevel(self):
-        Verb.welcome(self)
-        while(1):
-            confList = Sp.printEnumList(txt.lvlList)
-            inputLvl = input("Schwierigkeitgrad: ")
-            if inputLvl in confList:
-                break
-            print(txt.invalidInput)
-            time.sleep(2)
-        level = txt.lvlList[int(inputLvl)-1]
-        print("Schwierigkeitgrad: ", level)
-        time.sleep(2)
-        return level
-#------------------------------------------------------------------------------#    
-    def choseTitle(self, titles):
-        print(txt.themaMsg)
-        while 1:
-            confList = Verb.printEnumList(self,titles)
-            inputThema = input("Thema: ")
-            if inputThema in confList:
-                break
-            print(invalidInput) 
-            time.sleep(2)
-        thema = titles[int(inputThema) - 1]
-        print("Thema: ",thema)
-        time.sleep(2)
-        return thema
-#------------------------------------------------------------------------------#    
-    def choseSubTitle(self,title):
-        tRef = Verb.refCLabel(self,title)
-        subTitle = []
-        Interval = []
-        count = 1
-        while(1):
-            line = Verb.Cell(self,count,tRef)
-            if line == "":
-                break
-            if Verb.Cell(self,count,tRef+1) == "":
-                subTitle.append(Verb.Cell(self,count,tRef))
-            count += 1
-            
+    def __createVLSC(self,title,MT):
+        VList = []; lList = []; STList = []; AddList = []        
+        colTitle = Sp.refCol(verben,title,0)
+        miniList = Sp.getSubtitles(verben,colTitle,"Infinitiv")
+        for subTitle in miniList:
+            lineTitle = Sp.refLine(verben,subTitle,colTitle)
+            STData = [subTitle,[colTitle,lineTitle]]
+            STList.append(STData)
         print(txt.subThemaMsg)
-        while 1: 
-            confList = Verb.printEnumList(self,subTitle)
-            inputST = input("UnterThema: ")
-            if inputST in confList:
-                break
-            print(invalidInput)
-            time.sleep(2)
-            
-        inputST = int(inputST)
-        
-        if inputST == len(confList):
-            print("ta no limite")  #TODO: RESOLVE THIS LIMIT FAST
-        else:
-            interval = (subTitle[inputST-1],subTitle[inputST])            
-            count2 = 3
-            line = " "
-            while line != "":
-                line = Verb.Cell(self,count2,tRef)
-                if line == interval[0]:
-                    Interval.append(count2+1)
-                if line == interval[1]:
-                    Interval.append(count2)
-                count2 += 1
-            return Interval  
+        titlesChose = Sp.choseTitles(miniList)
+        for i in range(0,len(titlesChose)):
+            for j in range(0,len(miniList)):
+                if titlesChose[i] == miniList[j]:
+                    initLine = STList[j][1][1]; endLine = STList[j+1][1][1]
+                    AddList.append([initLine,endLine])
+        for elem in AddList:
+            firstElem = elem[0] +1; lastElem = elem[1]
+            for verb in range(firstElem,lastElem):       
+                lList = []
+                lList.append(Sp.Cell(verben,verb,colTitle))
+                lList.append(Sp.Cell(verben,verb,colTitle + MT))
+                VList.append(lList)
+        return VList
+    #TODO: RESOLVE THIS LIMIT FAST
 #------------------------------------------------------------------------------#
-    def choseTense(self):
+    def __choseTense(self):
         print(txt.tenseMsg)
-        returnList = []
-        check = ''
-        while check != "quit":
-            confList = Sp.printEnumList(self,txt.listTense)
-            returnList = []
-            print(txt.invalidInput) 
-            tense = input("Zeiten: ")
-            tense = tense.replace(' ','')
-            tenseList = tense.split(',')
-            for i in range(0,len(tenseList)):              
-                if tenseList[i] not in(confList):
-                    break
-                elif i == len(tenseList) - 1:
-                    check = "quit"
-        for j in range(0,len(tenseList)):
-            aux = int(tenseList[j])
-            returnList.append(listTense[aux -1]) 
-        return returnList
+        return Sp.choseTitles(txt.listTense)
     
-########################## FINDING ANSWERS #####################################    
-#------------------------------------------------------------------------------#
-    def captureParts(self,verb,verbList):
-        inf = Verb.getInfinitive(self,verb)
-        final = inf[len(inf)-2] + inf[len(inf)-1]
-        if final == 'en':
-            stam = Verb.cutString(inf,2)
-        else:
-            stam = Verb.cutString(inf,1)
-        lastLetter = stam[len(stam)-1]
-        if lastLetter in finalCase2:
-            final = "et"
-        else:
-            final = 't'
-        a = ''
-        b = ''
-        init = 'ge'
-        #print(stam)
-        for i in range(0,len(stam)):
-             a += stam[i]
-             if a in untrennbarePrefix:
-                 init = ''
-                 
-        for j in range(0,len(stam)):
-             b += stam[len(stam)-j-1]
-             if b == 'rei':
-                 init = ''
-
-        titleRef = Verb.refCLabel(self,verbList)
-        colV = titleRef
-        verbSearch = "-"
-        lineR = 0 
-        while verbSearch != "":
-            verbSearch = Verb.Cell(self,lineR,colV)
-            if verbSearch == verb:
-                break
-            lineR += 1       
-        ref = Verb.refSubTitles(self,"Perfekt")
-        col = (((ref[1])[0])[1])
+    def __auxPartizip(self,verb,verbList):
+        refTitle = Sp.refTitle(verben,verbList)
+        line = refTitle[0][0]; col = refTitle[0][1]; size = refTitle[1]
+        lineVerb = Sp.refLine(verben,verb,col)
+        if verbList == "Regelmäßige Verben":
+            for i in range(0,size):
+                if Sp.Cell(verben,line+2,col+i) == "Hilfsverb":
+                    colAuxVerb = col+i 
+                    auxVerb = Sp.Cell(verben,lineVerb,colAuxVerb)
+                    partizipII = GF.Partizip(verb)
+                    return[auxVerb, partizipII]                  
         if verbList == "Unregelmäßige Verben":
-            col = (((ref[1])[0])[1])
-            auxVerb = Verb.Cell(self,lineR, col)
-            auxVerb = auxVerb.capitalize()
-            partizipII = Verb.Cell(self,lineR, col+1)
- 
-        else:
-            col = (((ref[2])[0])[1])  
-            auxVerb = Verb.Cell(self,lineR, col)
-            auxVerb = auxVerb.capitalize()
-            partizipII = init + stam + final
-        return[auxVerb, partizipII]
+            for i in range(0,size):
+                if Sp.Cell(verben,line+2,col+i) == "Hilfsverb":
+                    colAuxVerb = col+i
+                if Sp.Cell(verben,line+2,col+i) == "Partizip II":
+                    colPart = col+i 
+                    auxVerb = Sp.Cell(verben,lineVerb,colAuxVerb)
+                    partizipII = Sp.Cell(verben,lineVerb,colPart)
+                    return[auxVerb, partizipII]
 #------------------------------------------------------------------------------#
-    def regFindAns(self,tense, person, verb):
-        inf = verb.lower()
-        final = inf[len(inf)-2] + inf[len(inf)-1]
-     
-        if final == 'en':
-            stam = Verb.cutString(inf,2)
-        else:
-            stam = Verb.cutString(inf,1)
-        lastLetter = stam[len(stam)-1]
-         
-        for i in range(0,len(vetPerson)):
-            if vetPerson[i] == person:
+    def __RVConjug(self,tense, person, verb):
+        verb = verb.lower()
+        word = GF.breakWord(verb)
+        if len(word) == 2:  inf = word[1];         prefix = word[0]
+        else:               inf = verb;             prefix = ''
+        stam = GF.stamVerb(inf)
+        endLetter = stam[len(stam)-1]
+        for i in range(0,len(txt.NomPerson)):
+            if txt.NomPerson[i] == person:
                 if tense == "Präsens":
-                    if lastLetter in finalCase2:
-                        return stam + vetPrasens2[i]
-                    elif lastLetter in finalCase3:
-                        return stam + vetPrasens3[i]
+                    if endLetter in txt.endCase1:
+                        conj = stam + txt.Pras2[i]
+                    elif endLetter in txt.endCase2:
+                        conj = stam + txt.Pras3[i]
                     else:
-                        return stam + vetPrasens1[i]
+                        conj = stam + txt.Pras1[i]                       
+                    if prefix == '':    return [conj] 
+                    else:               return [conj,prefix]
+                    
                 elif tense == "Präteritum":
-                    if lastLetter in finalCase2:
-                        return stam + 'e' + vetPrateritum[i]
+                    if endLetter in txt.endCase1:
+                        conj = stam + 'e' + txt.Prat[i]
                     else:
-                        return stam + vetPrateritum[i]
+                        conj = stam + txt.Prat[i]
+                    if prefix == '':    return [conj] 
+                    else:               return [conj,prefix]     
 #------------------------------------------------------------------------------#
-    def unregFindAns(self,tense, person, verb, verbList):
+    def __UVConjug(self,tense, person, verb):
+        refTitle = Sp.refTitle(verben,"Unregelmäßige Verben")
+        line = refTitle[0][0]; col = refTitle[0][1];
+        lineVerb = Sp.refLine(verben,verb,col)
+        ref = Sp.refTitle(verben,tense)
+        col2 = ref[0][1]
+        for i in range(0,len(txt.NomPerson)):
+            if person == txt.NomPerson[i]:
+                colVerb = col2 + i
+                conj = Sp.Cell(verben,lineVerb,colVerb)
+        lista = conj.split(" ")
+        return lista
+#------------------------------------------------------------------------------#
+    def __findAnswer(self,tense, person, verb):
         
-        titleRef = Verb.refCLabel(self,verbList)
-        colV = titleRef
-        verbSearch = "-"
-        lineR = 0 
-        while verbSearch != "":
-            verbSearch = Verb.Cell(self,lineR,colV)
-            if verbSearch == verb:
-                break
-            lineR += 1       
-        if tense == "Präsens":
-            ref = Verb.refSubTitles(self,"Präsens")
-        elif tense == "Präteritum":
-            ref = Verb.refSubTitles(self,"Präteritum")
+        verbList = Verb.__checkLists(self,verb)
+        if verbList == "Keine verb in Databank!":
+            return verbList
+        AuxPart = Verb.__auxPartizip(self,verb,verbList)
+        auxVerb = AuxPart[0].capitalize();   partizipII = AuxPart[1]
+        infinitiv = GF.getInfinitive(verb)
+        
         if tense == "Konjunktiv II":
-            ref = Verb.refSubTitles(self,"Konjunktiv II")
-        if verbList == "Unregelmäßige Verben":
-            col = (((ref[1])[0])[1])
-        elif verbList == "Hilfsverben":
-            col = (((ref[0])[0])[1])         
-        for i in range(0,len(vetPerson)):
-            if person == vetPerson[i]:
-                columnR = col + i
-                return Verb.Cell(self,lineR,columnR)
-    ''' 
-            pycharm
-            PEP
-            docstrings.
-    '''                        
-#------------------------------------------------------------------------------#
-    def findAnswer(self,tense, person, verb, verbList):
-        infinitiv = Verb.getInfinitive(self,verb)
-        listPart = Verb.captureParts(self,verb,verbList)
-        auxVerb = listPart[0]
-        partizipII = listPart[1]
-        prefix = ''
-        brokeVerb = verb.split('-')
-        if len(brokeVerb) == 2:
-            prefix = brokeVerb[0].lower()
-            verb = brokeVerb[1].capitalize()
-        if tense == "Präteritum" or tense == "Präsens" or tense == "Konjunktiv II":
+            if verbList == "Unregelmäßige Verben" :          
+                conjVerb =  Verb.__UVConjug(self,tense, person, verb)
+            return conjVerb
+        
+        if tense == "Präteritum" or tense == "Präsens":
             if verbList == "Regelmäßige Verben" : 
-                conjVerb =  Verb.regFindAns(self,tense, person, verb)
+                conjVerb =  Verb.__RVConjug(self,tense, person, verb)
             
-            if verbList == "Unregelmäßige Verben" or verbList == "Hilfsverben": 
-                conjVerb = Verb.unregFindAns(self,tense, person, verb, verbList)
-            return conjVerb + ' ' + prefix
+            if verbList == "Unregelmäßige Verben":
+                conjVerb = Verb.__UVConjug(self,tense, person, verb)
+            return conjVerb
 #------------------------------------------------------------------------------#                           
         if tense == "Futur I":
-            auxVerb1 = Verb.findAnswer(self,'Präsens',person,
-                                       "Werden","Hilfsverben")
-#------------------------------------------------------------------------------#                                       "Werden","Hilfsverben")
-            return auxVerb1 + ' ' + infinitiv
+            auxVerb1 = Verb.__findAnswer(self,"Präsens",person, "Werden")
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, infinitiv]
+#------------------------------------------------------------------------------#
         if tense == "Perfekt":
-            auxVerb1 = Verb.findAnswer(self,'Präsens',person,
-                                       auxVerb,"Hilfsverben")
-            return auxVerb1 + ' ' + partizipII
+            auxVerb1 = Verb.__findAnswer(self,"Präsens",person,auxVerb)
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, partizipII]
 #------------------------------------------------------------------------------#        
         if tense == "Plasquamperfekt":
-            auxVerb1 = Verb.findAnswer(self,'Präteritum',person,
-                                       auxVerb,"Hilfsverben")
-            return auxVerb1 + ' ' + partizipII
+            auxVerb1 = Verb.__findAnswer(self,"Präteritum",person,auxVerb)
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, partizipII]
 #------------------------------------------------------------------------------#        
         if tense == "Konjunktiv II + Vergangenheit":
-            auxVerb1 = Verb.findAnswer(self,'Konjunktiv II',person,
-                                       auxVerb,"Hilfsverben")
-            return auxVerb1 + ' ' + partizipII
+            auxVerb1 = Verb.__findAnswer(self,"Konjunktiv II",person, auxVerb)
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, partizipII]
 #------------------------------------------------------------------------------#        
         if tense == "Konjunktiv II + Futur I":
-            auxVerb1 = Verb.findAnswer(self,'Konjunktiv II',person,
-                                       "Werden","Hilfsverben")
-            return auxVerb1 + ' ' + partizipII
+            auxVerb1 = Verb.findAnswer(self,"Konjunktiv II",person, "Werden")
+            return [auxVerb1, partizipII]
 #------------------------------------------------------------------------------#        
-        if tense == "Futur II":       
-            auxVerb1 = Verb.findAnswer(self,'Präsens',person,
-                                       "Werden","Hilfsverben")   
-            return auxVerb1 + ' ' + infinitiv + ' ' + auxVerb.lower()
+        if tense == "Futur II":      
+            auxVerb1 = Verb.__findAnswer(self, "Präsens", person, "Werden") 
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1,infinitiv,auxVerb.lower()]
 #------------------------------------------------------------------------------#        
         if tense == "Konjunktiv II + Futur II":
-            auxVerb1 = Verb.findAnswer(self,'Konjunktiv II',person,
-                                       "Werden","Hilfsverben")
-            return auxVerb1 + ' ' + partizipII + ' ' + auxVerb.lower()
+            auxVerb1 = Verb.__findAnswer(self,"Konjunktiv II", person, "Werden")
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, partizipII, auxVerb.lower()]
 #------------------------------------------------------------------------------#
         if tense == "Passiv Präsen" :
-            auxVerb1 = Verb.findAnswer(self,'Präsens',person,
-                                       "Werden","Hilfsverben")
-            return auxVerb1 + ' ' + partizipII
+            auxVerb1 = Verb.__findAnswer(self,"Präsens", person, "Werden")
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, partizipII]
 #------------------------------------------------------------------------------#        
-        if tense == "Passiv Vergangenheit":
-            auxVerb1 = Verb.findAnswer(self,'Präteritum',person,
-                                       "Werden","Hilfsverben")
-            return auxVerb1 + ' ' + partizipII      
+        if tense == "Passiv Präteritum":
+            auxVerb1 = Verb.__findAnswer(self,'Präteritum',person, "Werden")
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, partizipII]
+#------------------------------------------------------------------------------#        
+        if tense == "Passiv Perfekt":
+            auxVerb1 = Verb.__findAnswer(self,'Präsens',person, "Sein")
+            auxVerb1 = GF.simpleAnswer(auxVerb1)
+            return [auxVerb1, partizipII, "worden"]
 ################################################################################
-    def getList1(self):
-        lista = []
-        for i in range(0,200):
-            if Verb.Cell(self,0,i) == "Verben zu konjugieren jetzt":
-                count = 1; count2 = 0        
-                while 1:
-                    if Verb.Cell(self,count,i) == "":
-                        count2 += 1
-                    elif Verb.Cell(self,count,i) != "":
-                        lista.append(Verb.Cell(self,count,i).capitalize())
-                        count2 = 0
-                    count += 1
-                    if count2 == 10:
-                        break
-                break
-        return lista
-################################################################################
-    def checkLists(self,v):
-        refUnreg = Verb.refCLabel(self,"Unregelmäßige Verben")
-        verb = " "
-        count = 0
-        while 1:
-            verb = Verb.Cell(self,count,refUnreg)
-            count += 1
-            if verb == "":
-                break
-            if verb == v:
+    def __checkLists(self,verb):
+        refUnreg = Sp.refCol(verben,"Unregelmäßige Verben",0)
+        count1 = 2; check = ''        
+        while check != "end":
+            check = Sp.Cell(verben,count1,refUnreg)
+            if check == verb: 
                 return "Unregelmäßige Verben"
-        refReg = Verb.refCLabel(self,"Regelmäßige Verben")
-        verb = " "
-        count2 = 0
-        while 1:
-            verb = Verb.Cell(self,count2,refReg)
-            count2 += 1
-            if verb == "":
-                break
-            if verb == v:
+            count1 += 1            
+        refReg = Sp.refCol(verben,"Regelmäßige Verben",0)
+        count2 = 2; check = ''
+        while check != "end":
+            check = Sp.Cell(verben,count2, refReg)
+            if check == verb:
                 return "Regelmäßige Verben"
-            
-        return "Wir haben keine Peruanische Verben im Database"
+            count2 += 1
+        return "Keine verb in Databank!"
 ################################################################################
-    def printInfo(self,person):
-        print("\n\n\n\n\n")
-        conf = ["Regelmäßige Verben","Unregelmäßige Verben"]
-        lista = Verb.getList1(self)
-        for i in lista:
-            check = Verb.checkLists(self,i)
-            print(i)
-            time.sleep(2)
-            for j in listTense:
-                if check in conf:
-                      print(j,"  : ",person,"  ", player1.findAnswer(j, person,
-                                                     i,check))
-                      time.sleep(1)
-                else:
-                    print(check)
-                    break
-            print()
+    def __verbTraining(self,name, verbList,tenseList):
+        Score = 0
+        while 1:
+            GF.jumpLines(30)
+            print("Player: " + name + "\nScore: ", Score)
+            GF.jumpLines(3)
+            verb = verbList[Sp.randList(verbList)]
+            person = txt.NomPerson[Sp.randList(txt.NomPerson)]
+            tense = tenseList[Sp.randList(tenseList)]
+    
+            print("Verb:", verb[0], "- Ubersetzung:",verb[1])
+            print("Zeit:", tense, "- Person:", person)
+            playerAnswer = input("Antwort: ")
+            if playerAnswer == "quit":  break
+            realAnswerList = Verb.__findAnswer(self,tense,person,verb[0])
+            realAnswer = GF.simpleAnswer(realAnswerList)
+            if playerAnswer == realAnswer:
+                Score += 1
+            else:   print("Falsch, ", realAnswer); sleep(3)
+     
+    def playVerb(self, name):
+        while 1:
+            GF.jumpLines(30)
+            print(txt.WKVerben + txt.chosemode)
+            mode = Sp.choseTitle(txt.VerbMode)
+            if mode == "quit": 
+                print("Ende des Verbentraining."); sleep(2); break
+            else:
+                verbList = Verb.__callVerbList(self,mode)
+                tenseList = Verb.__choseTense(self)
+                Verb.__verbTraining(self,name,verbList,tenseList)
+
 ################################################################################
+'''
 player1 = Verb()
-level = player1.choseLevel()
-player1.callVerbList(level)
+player1.generalCall()
+'''
+#434          goal less than 300
 """
 TODO:
-*Put the global strings on the spreadsheet.
-*Resolve the limit error.
-*Create a function that makes the check up made in all the functions of interface
-Make the lock for the muttersprache, Do you know what is it.
-
+* Modal verben
+* Questão Konjuntivo com haben e sein e modais
+* Create a function that makes the check up made in all the functions of interface
+* Make the lock for the muttersprache, Do you know what is it.
 create the functions training and playing
 Make the sketch of the first function wich decides show the verbs (training)
 or play the verbs (excercise)
-Think about something (pontuação)
+ 
 """

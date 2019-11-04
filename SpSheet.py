@@ -72,17 +72,42 @@ def printEnumList(List):
         print(i+1, "-", List[i])
         confList.append(str(i+1))
     return confList
+
+def findLimits(sheet):
+    i = 0; j = 0
+    while 1:
+        cell = Cell(sheet,i,j)
+        i += 1
+        if cell == "end": line = i; break
+    i = 0; j = 0
+    while 1:
+        cell = Cell(sheet,i,j)
+        j += 1
+        if cell == "end": col = j; break
+    return(line,col)
+        
 '''
 The refCTitle(sheet,label) function receives as parameters the sheet's name
 and a label, both are string variables. Then the function searches for the title
 required in the cells and if the label is found it'll be return the column.
 '''
-def refCTitle(sheet,label):
+def refCol(sheet,label,line):
     count = 0
     while 1:
-        if label == Cell(sheet,0,count):
+        if label == Cell(sheet,line,count):
             break
         if Cell(sheet,0,count) == "end":
+            print("Es gibt keine Label heißt", label)
+            break
+        count += 1
+    return count
+
+def refLine(sheet,label,col):
+    count = 0
+    while 1:
+        if label == Cell(sheet,count,col):
+            break
+        if Cell(sheet,count,col) == "end":
             print("Es gibt keine Label heißt", label)
             break
         count += 1
@@ -93,9 +118,9 @@ a column and runs though the lines. At the end it returns a list containing the
 subtitles of that list.
 '''
 
-def getSubtitles(sheet,col):
+def getSubtitles(sheet,col,preValue):
     STList = []
-    line1 = initLine(sheet,col,'Genre')
+    line1 = initLine(sheet,col,preValue)
     value = ' '
     while 1:
         value = Cell(sheet,line1,col)
@@ -176,16 +201,20 @@ Address means the coordinate (i,j) and size the width (in number of columns)
 of that title. 
 '''
 def refTitle(sheet,name):
+    limit = findLimits(sheet)
+    count = 0
     for i in range(0,40):
-        for j in range(0,20):
+        for j in range(0,limit[1]):
+            count += 1
+            if Cell(sheet,i,j) == 'end': j += 1; break
             if Cell(sheet,i,j) == name:
                 size = 1
                 while Cell(sheet,i,j + size) == '':
                     size += 1
                     if (Cell(sheet,i+1,j + size) == '' and 
-                        Cell(sheet,i+2,j + size) == ''):
-                        break
-                return [(i,j),size]
+                        Cell(sheet,i+2,j + size) == ''):    break
+                return [(i,j),size]  
+    #   return [(i,j),size]
 '''
 
 '''
@@ -221,7 +250,8 @@ def choseTrans(sheet,ref):
                 tongue.append((tongueName))
                 tongueAddr.append(tCol)
                 count += 1
-                tCol = col + i + count              
+                tCol = col + i + count
+    
     inputMT = 0
     while 1:
         confList = printEnumList(tongue)

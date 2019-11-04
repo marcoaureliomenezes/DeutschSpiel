@@ -4,9 +4,10 @@ Created on Sun Sep 15 13:47:43 2019
 @author: Marco Menezes
 """
 import SpSheet as Sp
-import time
 import random
+from time import sleep
 import texts as txt
+import generalFunctions as GF
 
 wortS = Sp.accessSP("WortSchatz") 
 
@@ -84,7 +85,7 @@ class WortSchatz:
         while 1:
             if count == 0:
                 break
-            playerAnswer = input().lower()
+            playerAnswer = input("Antwort: ").lower()
             if playerAnswer == "quit":
                 break
             for word in range(0,len(synList)):
@@ -96,65 +97,84 @@ class WortSchatz:
             count -= 1
 #------------------------------------------------------------------------------#
     def __practice(self,name,List):
-        score = 0
-        print(txt.jNext + txt.infoWS + txt.choseWS)               
+        Score = 0
+        print( txt.choseWS)               
         Answers = ['','']
         while 1:
-            print(txt.jNext,"Player:",name,"- Score:",score, txt.jScore)
+            GF.jumpLines(30)
+            print("Player: " + name + "\nScore: ", Score)
+            GF.jumpLines(3)
             rand = random.randint(0,len(List)-1)
             elem = List[rand]
             
             if elem[2] == "Substantiv":
                 Answers = WortSchatz.__subTraining(self,elem)
                 if Answers[0] == Answers[1]:
-                    score += 1
+                    Score += 1
                 if Answers[0] == "quit":
                     break
                 if Answers[0] != Answers[1]:
+                    GF.jumpLines(20)
+                    print("Player: " + name + "\nScore: ", Score)
+                    GF.jumpLines(3)
                     print("\nFalsch,", elem[0])
-                    a = input()
+                    a = input("Weiter? ")
             if elem[2] == "Verb":
                 Answers = WortSchatz.__verbTraining(self,elem)
                 if Answers[0] == Answers[1]:
-                    score += 1
+                    Score += 1
                 if Answers[0] == "quit":
                     break
                 if Answers[0] != Answers[1]:
+                    GF.jumpLines(20)
+                    print("Player: " + name + "\nScore: ", Score)
+                    GF.jumpLines(3)
                     print("\nFalsch,", Answers[1])
-                    a = input()
+                    a = input("Weiter? ")
             if elem[2] == "Adjektiv" or elem[2] == "Adverb":
                 answer = WortSchatz.__Synonym(self,elem)
                 if answer == True:
-                    score += 1
-            if Answers[0] == "quit":
+                    Score += 1
+                a = input("Weiter? ")
+            if a == "quit":
                     break
     '''
     '''
     def __training(self,name,List):
         for elem in List:
-            Input = input()
+            Input = input("Weiter? ")
+            GF.jumpLines(30)
             if Input == "quit": break
             if elem[2] == 'Verb':
                 print(elem[2],': ', elem[0], "- Perfekt:", elem[1],
                       '\nÜbersetzung:', elem[3],"\n\n")               
             if elem[2] == 'Substantiv':
-                print(elem[2],': ', elem[0], "- Plural:", elem[1],
+                print(elem[2]+':', elem[0], "- Plural:", elem[1],
                       '\nÜbersetzung:', elem[3],"\n\n")            
             if elem[2] == 'Adjektiv':
                 print(elem[2],': ', elem[0],'\nÜbersetzung:', elem[3],"\n\n")
                 
     def playWS(self,name):
-        print(txt.WStxt + txt.choseWS)
-        activity = Sp.choseTitle(txt.WSMode)
-        List = WortSchatz.__CrtSingList(self)
-        if activity == "Training":
-            WortSchatz.__training(self,name,List)
-        elif activity == "Übung":
-            WortSchatz.__practice(name,List)
+        while 1:  
+            GF.jumpLines(30)
+            print(txt.WKWS + txt.chosemode)
+            mode = Sp.choseTitle(txt.WSMode)
+            if mode == "quit":
+                print("Ende des Wortschatztraining."); sleep(2); break
+            print(txt.choseWS)
+            List = WortSchatz.__CrtSingList(self)
+            
+            if mode == "Training":
+                WortSchatz.__training(self,name,List)
+            elif mode == "Übung":
+                WortSchatz.__practice(self,name,List)
+            
         
 '''
 TODO2: Creates a fair Score
 '''         
 #------------------------------------------------------------------------------#
+'''
 wort = WortSchatz("Dadaia")
 wort.playWS(wort.nameOfPlayer)
+'''
